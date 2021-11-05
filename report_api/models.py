@@ -3,8 +3,6 @@ from uuid import uuid4
 import enum
 from sqlalchemy import Column, Integer, String, Enum
 from sqlalchemy.ext.declarative import as_declarative
-from sqlalchemy.orm import relationship
-from sqlalchemy.sql.schema import ForeignKey
 
 
 @as_declarative()
@@ -26,6 +24,6 @@ class UnionMember(Model):
     first_name = Column(String, nullable=False)
     patronymic = Column(String)
     academic_group_number = Column(String, nullable=False)
-    email = Column(String, primary_key=True, nullable=False)
+    email = Column(String, nullable=False)
     email_uuid = Column(String, nullable=False, default=str(uuid4()))
     status = Column(Enum(Status), default=Status.unconfirmed)

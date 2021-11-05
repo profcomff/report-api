@@ -1,15 +1,23 @@
+from os import name
 from typing import Optional
+
 from fastapi import FastAPI
 from fastapi.exceptions import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi_sqlalchemy import DBSessionMiddleware, db
+from pydantic import BaseModel
 from pydantic.networks import EmailStr
 from sqlalchemy import func
+from starlette.responses import RedirectResponse
 
-from models import Status, UnionMember
+from report_api.models import Status, UnionMember
+from report_api.settings import get_settings
 
+settings = get_settings()
 app = FastAPI()
+app.add_middleware(DBSessionMiddleware,
+                   db_url=settings.DB_DSN)
 
 
 class RegistrationDetails(BaseModel):
@@ -18,6 +26,9 @@ class RegistrationDetails(BaseModel):
     patronymic: Optional[str] = None
     academic_group_number: str
     email: EmailStr
+
+    class Config:
+        orm_mode = True
 
 
 @app.post("/register")
@@ -35,7 +46,15 @@ async def register_user(registration_details: RegistrationDetails):
     if user:
         return {"status": "fail"}
 
-    db.session.add(registration_details)
+    new_user = UnionMember(
+        last_name=registration_details.last_name,
+        first_name=registration_details.first_name,
+        patronymic=registration_details.patronymic,
+        academic_group_number=registration_details.academic_group_number,
+        email=registration_details.email
+    )
+
+    db.session.add(new_user)
     db.session.commit()
 
     # TODO отправить письмо для подтверждения электронной почты
@@ -51,15 +70,15 @@ async def confirm_email(uuid4: str):
     user = (
         db.session.query(UnionMember)
         .filter(
-            func.upper(UnionMember.email_uuid) == uuid4
+            UnionMember.email_uuid == uuid4
         )
         .one_or_none()
     )
     if not user:
-        return {"status": "fail"}
+        return RedirectResponse(settings.EMAIL_CONFIRM_FAIL)
     user.status = Status.confirmed
     db.session.commit()
-    return {"message": "ok"}
+    return RedirectResponse(settings.EMAIL_CONFIRM_OK)
 
 # Вход пользователя по логину и паролю
 
