@@ -91,7 +91,8 @@ async def register_user(registration_details: RegistrationDetails):
     db.session.add(new_user)
     db.session.commit()
 
-    send_email('Confirm Email', registration_details.email,
+    send_email('Профсоюзная конференция - Подтверждение электронной почты',
+               registration_details.email,
                f'https://app.profcomff.com/report/api/register/{new_user.email_uuid}')
     # TODO отправить письмо для подтверждения электронной почты
 

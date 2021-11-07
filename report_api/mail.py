@@ -1,10 +1,10 @@
 import smtplib
-from report_api.settings import get_settings
+from report_api.settings import get_settings, MAIL_TEMPLATE
 
 settings = get_settings()
 
 
-def send_email(subject, to_addr, body_text):
+def send_email(subject, to_addr, link):
     """
     Send an email
     """
@@ -14,7 +14,7 @@ def send_email(subject, to_addr, body_text):
         "To: %s" % to_addr,
         "Subject: %s" % subject,
         "",
-        body_text
+        MAIL_TEMPLATE.replace('{{url}}', link)
     ))
 
     from_addr = 'profcom@physics.msu.ru'
