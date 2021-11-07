@@ -1,3 +1,4 @@
+import random
 from os import name
 from typing import Optional
 
@@ -11,7 +12,7 @@ from pydantic.networks import EmailStr
 from sqlalchemy import func
 from starlette.responses import RedirectResponse
 
-from report_api.models import Status, UnionMember
+from report_api.models import Answer, Question, Status, UnionMember, ResponseOption
 from report_api.settings import get_settings
 
 settings = get_settings()
@@ -29,6 +30,23 @@ class RegistrationDetails(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class LoginDetails(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class AnswerDetails(BaseModel):
+    token: str
+    answer: str
+
+
+def answer_to_enum(answer: str):
+    if answer == "yes":
+        return ResponseOption.yes
+    if answer == "no":
+        return ResponseOption.no
 
 
 @app.post("/register")
@@ -75,16 +93,90 @@ async def confirm_email(uuid4: str):
         .one_or_none()
     )
     if not user:
-        return RedirectResponse(settings.EMAIL_CONFIRM_FAIL)
+        return RedirectResponse(settings.EMAIL_CONFIRM_ERROR)
+    if(user.status != Status.unconfirmed):
+        return RedirectResponse(settings.EMAIL_CONFIRM_RETRY)
     user.status = Status.confirmed
     db.session.commit()
-    return RedirectResponse(settings.EMAIL_CONFIRM_OK)
-
-# Вход пользователя по логину и паролю
+    return RedirectResponse(settings.EMAIL_CONFIRM_SUCCSESS)
 
 
-# @app.post("/login")
-# Ответ на вопрос
-# @app.post("/question/{num}")
+@app.post("/login")
+async def login(login_details: LoginDetails):
+    """
+    Вход пользователя по логину и паролю
+    """
+    user = (
+        db.session.query(UnionMember)
+        .filter(
+            UnionMember.email == login_details.email,
+            UnionMember.password == login_details.password,
+            UnionMember.status == Status.confirmed
+        )
+        .one_or_none()
+    )
+    if not user:
+        return {"status": "fail"}
+
+    token = ''
+    for _ in range(settings.PIN_LENGTH):
+        token += random.choice(settings.PIN_SYMBOLS)
+
+    user.token = token
+    db.session.commit()
+
+    questions = (db.session.query(
+        Question.text).order_by(Question.index).all())
+
+    return {"status": "ok", "quesions": questions}
+
+
+@app.post("/question/{index}")
+async def answer(index: int, answer_details: AnswerDetails):
+    """
+    Ответ на вопрос
+    """
+    user = (
+        db.session.query(UnionMember)
+        .filter(
+            UnionMember.token == answer_details.token
+        )
+        .one_or_none()
+    )
+    if not user:
+        return {"status": "fail"}
+
+    for answer in user.answers:
+        if answer.question.index == index:
+            return {"status": "fail"}
+
+    question = (
+        db.session.query(Question)
+        .filter(
+            Question.index == index
+        )
+        .one_or_none()
+    )
+
+    if not question:
+        return {"status": "fail"}
+
+    new_answer = Answer(
+        union_member_id=user.id,
+        question_id=question.id,
+        answer=answer_to_enum(answer_details.answer)
+    )
+    db.session.add(new_answer)
+
+    question_max_index = (
+        db.session.query(func.max(Question.index)).scalar()
+    )
+
+    if index == question_max_index:
+        user.status = Status.finished
+
+    db.session.commit()
+    return {"status": "ok"}
+
 # Посмотреть результаты
 # @app.get("/stats?token=<Что-то страшное>")
