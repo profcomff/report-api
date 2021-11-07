@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     ROOT: Optional[HttpUrl] = None
     DB_DSN: PostgresDsn = None
 
+    EMAIL_PASS: str = None
+
     EMAIL_CONFIRM_SUCCSESS: HttpUrl = 'https://report.profcomff.com/email_confirmation_success'
     EMAIL_CONFIRM_RETRY: HttpUrl = 'https://report.profcomff.com/email_confirmation_retry'
     EMAIL_CONFIRM_ERROR: HttpUrl = 'https://report.profcomff.com/email_confirmation_error'

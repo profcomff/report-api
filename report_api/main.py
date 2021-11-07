@@ -11,6 +11,7 @@ from pydantic import BaseModel
 from pydantic.networks import EmailStr
 from sqlalchemy import func
 from starlette.responses import RedirectResponse
+from report_api.mail import send_email
 
 from report_api.models import Answer, Question, Status, UnionMember, ResponseOption
 from report_api.settings import get_settings
@@ -34,6 +35,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 class RegistrationDetails(BaseModel):
     last_name: str
@@ -76,7 +78,7 @@ async def register_user(registration_details: RegistrationDetails):
         .one_or_none()
     )
     if user:
-        return {"status": "fail"}
+        raise HTTPException(409,'user already exists')
 
     new_user = UnionMember(
         last_name=registration_details.last_name,
@@ -89,6 +91,8 @@ async def register_user(registration_details: RegistrationDetails):
     db.session.add(new_user)
     db.session.commit()
 
+    send_email('Confirm Email', registration_details.email,
+               f'https://app.profcomff.com/report/api/register/{new_user.email_uuid}')
     # TODO отправить письмо для подтверждения электронной почты
 
     return {"status": "ok"}
@@ -130,7 +134,7 @@ async def login(login_details: LoginDetails):
         .one_or_none()
     )
     if not user:
-        return {"status": "fail"}
+        raise HTTPException(401)
 
     token = ''
     for _ in range(settings.PIN_LENGTH):
@@ -158,11 +162,11 @@ async def answer(index: int, answer_details: AnswerDetails):
         .one_or_none()
     )
     if not user:
-        return {"status": "fail"}
+        raise HTTPException(401)
 
     for answer in user.answers:
         if answer.question.index == index:
-            return {"status": "fail"}
+            raise HTTPException(409,'answer already exists')
 
     question = (
         db.session.query(Question)
@@ -173,7 +177,7 @@ async def answer(index: int, answer_details: AnswerDetails):
     )
 
     if not question:
-        return {"status": "fail"}
+        raise HTTPException(404)
 
     new_answer = Answer(
         union_member_id=user.id,

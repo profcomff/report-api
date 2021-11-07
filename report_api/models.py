@@ -34,7 +34,7 @@ class UnionMember(Model):
     patronymic = Column(String)
     academic_group_number = Column(String, nullable=False)
     email = Column(String, nullable=False)
-    email_uuid = Column(String, nullable=False, default=str(uuid4()))
+    email_uuid = Column(String, nullable=False, default=lambda:str(uuid4()))
     status = Column(Enum(Status), default=Status.unconfirmed)
     token = Column(String(256))
     password = Column(String)
