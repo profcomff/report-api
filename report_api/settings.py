@@ -37,15 +37,13 @@ MAIL_TEMPLATE = """
 <body>
     <img class="header" style="width: 100%;" src="https://dyakov.space/wp-content/uploads/profcom-report-header.png"
         alt="62-я отчетно-выборная конференция профкома" />
-    <div class="content" style="width: 80%; max-width: 300px; padding: 10px; margin: 0 auto; font: 1em sans-serif;">
+    <div class="content" style="width: 80%; max-width: 800px; padding: 10px; margin: 0 auto; font: 1.3rem sans-serif;">
         <h1>Регистрация успешно пройдена!</h1>
         <p>Привет! Это твой Профком студентов</p>
         <p>Благодарим тебя за регистрацию в качестве делегата. Теперь ты сможешь первым узнать об открытии нашего сайта
             и представить интересы своей группы на Конференции.</p>
         <p>Для продолжения пройди по ссылке: <a href={{url}}>{{url}}</a></p>
     </div>
-    <div class="footer" style="width: 90%; text-align: center; padding: 5%; background-color: #8ba8bf; color: white;">
-        <sup>Профком студентов физфака &copy; 2021</sup></div>
 </body>
 
 </html>

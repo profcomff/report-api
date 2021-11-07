@@ -13,6 +13,7 @@ def send_email(subject, to_addr, link):
         "From: no-repty@physics.msu.ru",
         "To: %s" % to_addr,
         "Subject: %s" % subject,
+        "Content-Type: text/html;",
         "",
         MAIL_TEMPLATE.replace('{{url}}', link)
     ))
@@ -21,5 +22,5 @@ def send_email(subject, to_addr, link):
     smtpObj = smtplib.SMTP('smtp.gmail.com', 587)
     smtpObj.starttls()
     smtpObj.login(from_addr, settings.EMAIL_PASS)
-    smtpObj.sendmail(from_addr, [to_addr], BODY)
+    smtpObj.sendmail(from_addr, [to_addr], BODY.encode('utf-8'))
     smtpObj.quit()
