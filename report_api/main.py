@@ -16,7 +16,7 @@ from report_api.models import Answer, Question, Status, UnionMember, ResponseOpt
 from report_api.settings import get_settings
 
 settings = get_settings()
-app = FastAPI()
+app = FastAPI(root_path=settings.ROOT)
 app.add_middleware(DBSessionMiddleware,
                    db_url=settings.DB_DSN)
 

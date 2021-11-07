@@ -6,6 +6,7 @@ from pydantic.networks import AnyHttpUrl, PostgresDsn
 
 
 class Settings(BaseSettings):
+    ROOT: Optional[HttpUrl] = None
     DB_DSN: PostgresDsn = None
 
     EMAIL_CONFIRM_SUCCSESS: AnyHttpUrl = 'https://report.profcomff.com/email_confirmation_success'
