@@ -19,7 +19,21 @@ settings = get_settings()
 app = FastAPI(root_path=settings.ROOT)
 app.add_middleware(DBSessionMiddleware,
                    db_url=settings.DB_DSN)
-
+origins = [
+    "https://app.profcomff.com",
+    "http://app.profcomff.com",
+    "https://www.profcomff.com",
+    "http://www.profcomff.com",
+    "http://localhost",
+    "http://localhost:8080",
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class RegistrationDetails(BaseModel):
     last_name: str
