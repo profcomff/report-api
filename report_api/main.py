@@ -149,7 +149,7 @@ async def login(login_details: LoginDetails):
     questions = db.session.query(Question.text, Question.id).filter(
         Question.id.not_in(user_answered_question_id)).order_by(Question.index).all()
 
-    return {"status": "ok", "question_id": token, "questions": questions}
+    return {"status": "ok", "token": token, "questions": questions}
 
 
 @app.post("/question/{id}")
