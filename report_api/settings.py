@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     EMAIL_CONFIRM_ERROR: HttpUrl = 'https://report.profcomff.com/email_confirmation_error'
 
     PIN_SYMBOLS: str = string.ascii_uppercase + string.digits
-    PIN_LENGTH: int = 6
+    PIN_LENGTH: int = 70
 
     class Config:
         case_sensitive = True

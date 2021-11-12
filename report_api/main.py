@@ -78,7 +78,7 @@ async def register_user(registration_details: RegistrationDetails):
         .one_or_none()
     )
     if user:
-        raise HTTPException(409,'user already exists')
+        raise HTTPException(409, 'user already exists')
 
     new_user = UnionMember(
         last_name=registration_details.last_name,
@@ -144,14 +144,16 @@ async def login(login_details: LoginDetails):
     user.token = token
     db.session.commit()
 
-    questions = (db.session.query(
-        Question.text).order_by(Question.index).all())
+    user_answered_question_id = db.session.query(
+        Answer.question_id).filter(Answer.union_member == user)
+    questions = db.session.query(Question.text, Question.id).filter(
+        Question.id.not_in(user_answered_question_id)).order_by(Question.index).all()
 
-    return {"status": "ok", "quesions": questions}
+    return {"status": "ok", "question_id": token, "questions": questions}
 
 
-@app.post("/question/{index}")
-async def answer(index: int, answer_details: AnswerDetails):
+@app.post("/question/{id}")
+async def answer(id: int, answer_details: AnswerDetails):
     """
     Ответ на вопрос
     """
@@ -166,13 +168,13 @@ async def answer(index: int, answer_details: AnswerDetails):
         raise HTTPException(401)
 
     for answer in user.answers:
-        if answer.question.index == index:
-            raise HTTPException(409,'answer already exists')
+        if answer.question.id == id:
+            raise HTTPException(409, 'answer already exists')
 
     question = (
         db.session.query(Question)
         .filter(
-            Question.index == index
+            Question.id == id
         )
         .one_or_none()
     )
@@ -187,11 +189,10 @@ async def answer(index: int, answer_details: AnswerDetails):
     )
     db.session.add(new_answer)
 
-    question_max_index = (
-        db.session.query(func.max(Question.index)).scalar()
-    )
-
-    if index == question_max_index:
+    all_question_ids = set(db.session.query(Question.id).all())
+    user_answered_question_id = set(db.session.query(
+        Answer.question_id).filter(Answer.union_member == user).all())
+    if all_question_ids == user_answered_question_id:
         user.status = Status.finished
 
     db.session.commit()
