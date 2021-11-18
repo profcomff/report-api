@@ -1,6 +1,8 @@
 import random
 from os import name
 from typing import Optional
+import secrets
+import asyncio
 
 from fastapi import FastAPI
 from fastapi.exceptions import HTTPException
@@ -199,6 +201,33 @@ async def answer(id: int, answer_details: AnswerDetails):
 
     db.session.commit()
     return {"status": "ok"}
+
+
+@app.get("/passes")
+async def generate_pass():
+    """
+    Генерация и отправка паролей для подтвержденных пользователей
+    """
+    users = (
+        db.session.query(UnionMember)
+        .filter(
+            UnionMember.password == None,
+            UnionMember.status == Status.confirmed
+        ).all()
+    )
+    if len(users) <= 0:
+        raise HTTPException(400, "users not found")
+
+    for user in users:
+        password = ''.join(secrets.choice(settings.PASS_ALPHABET)
+                           for i in range(12))
+        user.password = password
+        print('send email')  # TODO send email
+        db.session.commit()
+        await asyncio.sleep(2)
+
+    return {"status": "ok"}
+
 
 # Посмотреть результаты
 # @app.get("/stats?token=<Что-то страшное>")
