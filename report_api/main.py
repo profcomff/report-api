@@ -63,6 +63,8 @@ def answer_to_enum(answer: str):
         return ResponseOption.yes
     if answer == "no":
         return ResponseOption.no
+    if answer == "skip":
+        return ResponseOption.skip
 
 
 @app.post("/register")

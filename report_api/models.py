@@ -23,6 +23,7 @@ class Status(enum.Enum):
 class ResponseOption(enum.Enum):
     yes = 1
     no = 2
+    skip = 3
 
 
 class UnionMember(Model):
