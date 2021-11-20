@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     PASS_ALPHABET: str = string.ascii_letters + \
         string.digits  # + string.punctuation
 
-    TIME_START_VOTING = datetime(2021, 11, 21, 16, 0, 0, 0)
+    TIME_START_VOTING = datetime(2021, 11, 20, 16, 0, 0, 0)
     TIME_END_VOTING = datetime(2021, 11, 23, 19, 0, 0, 0)
 
     class Config:
