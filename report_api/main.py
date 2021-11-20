@@ -221,7 +221,7 @@ async def answer(id: int, answer_details: AnswerDetails):
     return {"status": "ok"}
 
 
-@app.get("/passes")
+@app.post("/passes")
 async def generate_passes():
     """
     Генерация и отправка паролей для подтвержденных пользователей
@@ -259,7 +259,7 @@ def generate_pass(user: UnionMember):
         db.session.commit()
 
 
-@app.get("/resend_confirm")
+@app.post("/resend_confirm")
 async def resend_confirm():
     """
     Перепосылает письма подтверждения на все не подтвержденные почты
