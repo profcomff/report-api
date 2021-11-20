@@ -1,5 +1,4 @@
 import random
-from os import name
 from typing import Optional
 import secrets
 import asyncio
@@ -97,11 +96,17 @@ async def register_user(registration_details: RegistrationDetails):
     )
 
     db.session.add(new_user)
-    db.session.commit()
 
-    send_confirmation_email('Профсоюзная конференция - Подтверждение электронной почты',
-                            registration_details.email,
-                            f'https://app.profcomff.com/report/api/register/{new_user.email_uuid}')
+    try:
+        send_confirmation_email('Профсоюзная конференция - Подтверждение электронной почты',
+                                registration_details.email,
+                                f'https://app.profcomff.com/report/api/register/{new_user.email_uuid}')
+    except Exception as e:
+        print(e)
+        db.session.rollback()
+        raise HTTPException(500)
+
+    db.session.commit()
 
     return {"status": "ok"}
 
@@ -242,11 +247,16 @@ def generate_pass(user: UnionMember):
     password = ''.join(secrets.choice(settings.PASS_ALPHABET)
                        for i in range(12))
     user.password = password
-    db.session.commit()
-    send_password_email('Профсоюзная конференция уже началась',
-                        user.email,
-                        user.first_name,
-                        password)
+    try:
+        send_password_email('Профсоюзная конференция уже началась',
+                            user.email,
+                            user.first_name,
+                            password)
+    except Exception as e:
+        print(e)
+        db.session.rollback()
+    else:
+        db.session.commit()
 
 # Посмотреть результаты
 # @app.get("/stats?token=<Что-то страшное>")
