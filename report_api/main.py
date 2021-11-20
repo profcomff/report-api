@@ -13,7 +13,7 @@ from pydantic import BaseModel
 from pydantic.networks import EmailStr
 from sqlalchemy import func
 from starlette.responses import RedirectResponse
-from report_api.mail import send_email
+from report_api.mail import send_confirmation_email, send_password_email
 
 from report_api.models import Answer, Question, Status, UnionMember, ResponseOption
 from report_api.settings import get_settings
@@ -95,10 +95,9 @@ async def register_user(registration_details: RegistrationDetails):
     db.session.add(new_user)
     db.session.commit()
 
-    send_email('Профсоюзная конференция - Подтверждение электронной почты',
+    send_confirmation_email('Профсоюзная конференция - Подтверждение электронной почты',
                registration_details.email,
                f'https://app.profcomff.com/report/api/register/{new_user.email_uuid}')
-    # TODO отправить письмо для подтверждения электронной почты
 
     return {"status": "ok"}
 
@@ -204,7 +203,7 @@ async def answer(id: int, answer_details: AnswerDetails):
 
 
 @app.get("/passes")
-async def generate_pass():
+async def generate_passes():
     """
     Генерация и отправка паролей для подтвержденных пользователей
     """
@@ -219,15 +218,21 @@ async def generate_pass():
         raise HTTPException(400, "users not found")
 
     for user in users:
-        password = ''.join(secrets.choice(settings.PASS_ALPHABET)
-                           for i in range(12))
-        user.password = password
-        print('send email')  # TODO send email
-        db.session.commit()
+        generate_pass(user)
         await asyncio.sleep(2)
 
     return {"status": "ok"}
 
+
+def generate_pass(user: UnionMember):
+        password = ''.join(secrets.choice(settings.PASS_ALPHABET)
+                           for i in range(12))
+        user.password = password
+        db.session.commit()
+    send_password_email('Профсоюзная конференция уже началась',
+                        user.email,
+                        user.first_name,
+                        password)
 
 # Посмотреть результаты
 # @app.get("/stats?token=<Что-то страшное>")
