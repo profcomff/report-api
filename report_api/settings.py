@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     PIN_SYMBOLS: str = string.ascii_uppercase + string.digits
     PIN_LENGTH: int = 70
 
-    PASS_ALPHABET: str = string.ascii_letters + string.digits + string.punctuation
+    PASS_ALPHABET: str = string.ascii_letters + string.digits #+ string.punctuation
 
     class Config:
         case_sensitive = True
