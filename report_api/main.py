@@ -96,7 +96,7 @@ async def register_user(registration_details: RegistrationDetails):
     )
 
     db.session.add(new_user)
-
+    db.session.flush()
     try:
         send_confirmation_email('Профсоюзная конференция - Подтверждение электронной почты',
                                 registration_details.email,
