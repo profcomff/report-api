@@ -20,7 +20,11 @@ class Settings(BaseSettings):
     PIN_SYMBOLS: str = string.ascii_uppercase + string.digits
     PIN_LENGTH: int = 70
 
-    PASS_ALPHABET: str = string.ascii_letters + string.digits #+ string.punctuation
+    PASS_ALPHABET: str = string.ascii_letters + \
+        string.digits  # + string.punctuation
+
+    TIME_START_VOTING = datetime(2021, 11, 21, 16, 0, 0, 0)
+    TIME_END_VOTING = datetime(2021, 11, 23, 19, 0, 0, 0)
 
     class Config:
         case_sensitive = True
@@ -96,9 +100,6 @@ MAIL_PASSWORD_TEMPLATE = """
 
 </html>
 """
-
-TIME_START_VOTING = datetime(2021, 11, 21, 16, 0, 0, 0)
-TIME_END_VOTING = datetime(2021, 11, 23, 20, 0, 0, 0)
 
 
 @lru_cache()

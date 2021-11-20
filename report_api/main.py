@@ -16,7 +16,7 @@ from starlette.responses import RedirectResponse
 from report_api.mail import send_confirmation_email, send_password_email
 
 from report_api.models import Answer, Question, Status, UnionMember, ResponseOption
-from report_api.settings import TIME_END_VOTING, TIME_START_VOTING, get_settings
+from report_api.settings import get_settings
 
 settings = get_settings()
 app = FastAPI(root_path=settings.ROOT)
@@ -74,7 +74,7 @@ async def register_user(registration_details: RegistrationDetails):
     """
     Регистрация
     """
-    if datetime.utcnow() > TIME_START_VOTING:
+    if datetime.utcnow() > settings.TIME_START_VOTING:
         raise HTTPException(401, "voiting already started")
 
     user = (
@@ -130,7 +130,7 @@ async def confirm_email(uuid4: str):
     user.status = Status.confirmed
     db.session.commit()
 
-    if datetime.utcnow() > TIME_START_VOTING:
+    if datetime.utcnow() > settings.TIME_START_VOTING:
         generate_pass(user)
 
     return RedirectResponse(settings.EMAIL_CONFIRM_SUCCSESS)
@@ -141,7 +141,7 @@ async def login(login_details: LoginDetails):
     """
     Вход пользователя по логину и паролю
     """
-    if datetime.utcnow() > TIME_END_VOTING:
+    if datetime.utcnow() > settings.TIME_END_VOTING:
         raise HTTPException(401, "voiting already finished")
 
     user = (
@@ -176,7 +176,7 @@ async def answer(id: int, answer_details: AnswerDetails):
     """
     Ответ на вопрос
     """
-    if datetime.utcnow() > TIME_END_VOTING:
+    if datetime.utcnow() > settings.TIME_END_VOTING:
         raise HTTPException(401, "voiting already finished")
 
     user = (
