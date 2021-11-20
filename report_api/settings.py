@@ -1,6 +1,7 @@
 import string
 from typing import Optional
 from functools import lru_cache
+from datetime import datetime
 
 from pydantic import BaseSettings
 from pydantic.networks import HttpUrl, PostgresDsn
@@ -95,6 +96,10 @@ MAIL_PASSWORD_TEMPLATE = """
 
 </html>
 """
+
+TIME_START_VOTING = datetime(2021, 11, 21, 16, 0, 0, 0)
+TIME_END_VOTING = datetime(2021, 11, 23, 20, 0, 0, 0)
+
 
 @lru_cache()
 def get_settings():

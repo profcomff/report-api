@@ -3,6 +3,7 @@ from os import name
 from typing import Optional
 import secrets
 import asyncio
+from datetime import datetime
 
 from fastapi import FastAPI
 from fastapi.exceptions import HTTPException
@@ -16,7 +17,7 @@ from starlette.responses import RedirectResponse
 from report_api.mail import send_confirmation_email, send_password_email
 
 from report_api.models import Answer, Question, Status, UnionMember, ResponseOption
-from report_api.settings import get_settings
+from report_api.settings import TIME_END_VOTING, TIME_START_VOTING, get_settings
 
 settings = get_settings()
 app = FastAPI(root_path=settings.ROOT)
@@ -74,6 +75,9 @@ async def register_user(registration_details: RegistrationDetails):
     """
     Регистрация
     """
+    if datetime.utcnow() > TIME_START_VOTING:
+        raise HTTPException(401, "voiting already started")
+
     user = (
         db.session.query(UnionMember)
         .filter(
@@ -96,8 +100,8 @@ async def register_user(registration_details: RegistrationDetails):
     db.session.commit()
 
     send_confirmation_email('Профсоюзная конференция - Подтверждение электронной почты',
-               registration_details.email,
-               f'https://app.profcomff.com/report/api/register/{new_user.email_uuid}')
+                            registration_details.email,
+                            f'https://app.profcomff.com/report/api/register/{new_user.email_uuid}')
 
     return {"status": "ok"}
 
@@ -120,6 +124,10 @@ async def confirm_email(uuid4: str):
         return RedirectResponse(settings.EMAIL_CONFIRM_RETRY)
     user.status = Status.confirmed
     db.session.commit()
+
+    if datetime.utcnow() > TIME_START_VOTING:
+        generate_pass(user)
+
     return RedirectResponse(settings.EMAIL_CONFIRM_SUCCSESS)
 
 
@@ -128,6 +136,9 @@ async def login(login_details: LoginDetails):
     """
     Вход пользователя по логину и паролю
     """
+    if datetime.utcnow() > TIME_END_VOTING:
+        raise HTTPException(401, "voiting already finished")
+
     user = (
         db.session.query(UnionMember)
         .filter(
@@ -160,6 +171,9 @@ async def answer(id: int, answer_details: AnswerDetails):
     """
     Ответ на вопрос
     """
+    if datetime.utcnow() > TIME_END_VOTING:
+        raise HTTPException(401, "voiting already finished")
+
     user = (
         db.session.query(UnionMember)
         .filter(
@@ -225,10 +239,10 @@ async def generate_passes():
 
 
 def generate_pass(user: UnionMember):
-        password = ''.join(secrets.choice(settings.PASS_ALPHABET)
-                           for i in range(12))
-        user.password = password
-        db.session.commit()
+    password = ''.join(secrets.choice(settings.PASS_ALPHABET)
+                       for i in range(12))
+    user.password = password
+    db.session.commit()
     send_password_email('Профсоюзная конференция уже началась',
                         user.email,
                         user.first_name,
