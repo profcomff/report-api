@@ -8,17 +8,17 @@ def send_confirmation_email(subject, to_addr, link):
     """
     Send confirmation email
     """
+    from_addr = 'profcom@physics.msu.ru'
 
     BODY = "\r\n".join((
-        "From: no-repty@physics.msu.ru",
-        "To: %s" % to_addr,
-        "Subject: %s" % subject,
-        "Content-Type: text/html;",
+        f"From: {from_addr}",
+        f"To: {to_addr}",
+        f"Subject: {subject}",
+        "Content-Type: text/html; charset=utf-8;",
         "",
         MAIL_CONFIRMATION_TEMPLATE.replace('{{url}}', link)
     ))
 
-    from_addr = 'profcom@physics.msu.ru'
     smtpObj = smtplib.SMTP('smtp.gmail.com', 587)
     smtpObj.starttls()
     smtpObj.login(from_addr, settings.EMAIL_PASS)
@@ -30,18 +30,18 @@ def send_password_email(subject, to_addr, name, password):
     """
     Send password email
     """
+    from_addr = 'profcom@physics.msu.ru'
 
     BODY = "\r\n".join((
-        "From: no-repty@physics.msu.ru",
-        "To: %s" % to_addr,
-        "Subject: %s" % subject,
-        "Content-Type: text/html;",
+        f"From: {from_addr}",
+        f"To: {to_addr}",
+        f"Subject: {subject}",
+        "Content-Type: text/html; charset=utf-8;",
         "",
         MAIL_PASSWORD_TEMPLATE.replace('{{name}}', name)
         .replace('{{email}}', to_addr).replace('{{password}}', password)
     ))
 
-    from_addr = 'profcom@physics.msu.ru'
     smtpObj = smtplib.SMTP('smtp.gmail.com', 587)
     smtpObj.starttls()
     smtpObj.login(from_addr, settings.EMAIL_PASS)
