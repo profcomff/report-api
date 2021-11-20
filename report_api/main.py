@@ -258,5 +258,29 @@ def generate_pass(user: UnionMember):
     else:
         db.session.commit()
 
+
+@app.get("/resend_confirm")
+async def resend_confirm():
+    """
+    Перепосылает письма подтверждения на все не подтвержденные почты
+    """
+    users = (
+        db.session.query(UnionMember)
+        .filter(
+            UnionMember.status == Status.unconfirmed,
+            UnionMember.created_at >= datetime(2021, 11, 20, 12, 0, 0, 0)
+        ).all()
+    )
+    if len(users) <= 0:
+        raise HTTPException(400, "users not found")
+
+    for user in users:
+        send_confirmation_email('Профсоюзная конференция - Подтверждение электронной почты',
+                                user.email,
+                                f'https://app.profcomff.com/report/api/register/{user.email_uuid}')
+        await asyncio.sleep(2)
+
+    return {"status": "ok"}
+
 # Посмотреть результаты
 # @app.get("/stats?token=<Что-то страшное>")
