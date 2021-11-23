@@ -101,6 +101,32 @@ MAIL_PASSWORD_TEMPLATE = """
 </html>
 """
 
+MAIL_CONFERENCE_END_TEMPLATE = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профсоюзная конференция</title>
+</head>
+<body>
+    <img class="header" style="width: 100%;" src="https://dyakov.space/wp-content/uploads/profcom-report-header.png"
+        alt="62-я отчетно-выборная конференция профкома" />
+    <div class="content" style="width: 80%; max-width: 800px; padding: 10px; margin: 0 auto; font: 1.3rem sans-serif;">
+        <h1>Конфереренция завершена!</h1>
+        <p>62-ая Отчетно-выборная конференция Профкома студентов официально закрыта!</p>
+        <p>Спасибо всем делегатам, и тебе в отдельности, за то, что вы читали наш отчет, голосовали, оставляли отзывы, задавали вопросы и проявляли интерес к нашей работе. Итоги голосований ты можешь найти в обновленном разделе на сайте конференции в разделе «Резолюция».</p>
+        <p>Мы надеемся, что пусть и в таком, дистанционном, формате, наша конференция была для тебя интересна. Внимание членов профсоюза к нашей деятельности вдохновляет нас и дальше работать над улучшением жизни студентов на физическом факультете! Увидимся в следующем году на новой Отчетной конференции!</p>
+        <a href="https://report.profcomff.com/results" target="_blank" rel="noopener noreferrer"
+            style="display: block; max-width: 80%; margin: 40px auto; padding: 20px; background-color: rgb(13, 110, 253); color: rgb(255, 255, 255); text-align: center; border-radius: 4px; text-decoration: none;">
+            Перейти к резолюции
+        </a>
+    </div>
+</body>
+</html>
+"""
+
 
 @lru_cache()
 def get_settings():

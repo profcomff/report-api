@@ -13,7 +13,7 @@ from pydantic import BaseModel
 from pydantic.networks import EmailStr
 from sqlalchemy import func
 from starlette.responses import RedirectResponse
-from report_api.mail import send_confirmation_email, send_password_email
+from report_api.mail import send_confirmation_email, send_password_email, send_conference_end_email
 
 from report_api.models import Answer, Question, Status, UnionMember, ResponseOption
 from report_api.settings import get_settings
@@ -282,5 +282,24 @@ async def resend_confirm():
 
     return {"status": "ok"}
 
-# Посмотреть результаты
-# @app.get("/stats?token=<Что-то страшное>")
+
+@app.post("/conference_end")
+async def conference_end():
+    """
+    Отправка писем о завершении мероприятия
+    """
+    users = (
+        db.session.query(UnionMember)
+        .filter(
+            UnionMember.status != Status.unconfirmed
+        ).all()
+    )
+    if len(users) <= 0:
+        raise HTTPException(400, "users not found")
+
+    for user in users:
+        send_conference_end_email('Итоги профсоюзной конференции',
+                                  user.email)
+        await asyncio.sleep(2)
+
+    return {"status": "ok"}
