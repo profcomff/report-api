@@ -21,7 +21,8 @@ from report_api.settings import get_settings
 settings = get_settings()
 app = FastAPI(root_path=settings.ROOT)
 app.add_middleware(DBSessionMiddleware,
-                   db_url=settings.DB_DSN)
+                   db_url=settings.DB_DSN, 
+                   engine_args=dict(pool_pre_ping=True))
 origins = [
     "https://app.profcomff.com",
     "http://app.profcomff.com",
